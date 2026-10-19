@@ -1,0 +1,58 @@
+name: Publish RanTeach to Firebase
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firebase-hosting-live
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Check and publish the website
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Check pages, scripts and local assets
+        run: node scripts/check-site.mjs
+
+      - name: Check Firebase connection
+        env:
+          FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_RANTEACH }}
+        run: |
+          node --input-type=module <<'JS'
+          const project = process.env.FIREBASE_PROJECT_ID;
+          const key = process.env.FIREBASE_SERVICE_ACCOUNT;
+          if (!project || !key) throw new Error('Set FIREBASE_PROJECT_ID and FIREBASE_SERVICE_ACCOUNT_RANTEACH in repository Actions settings.');
+          let account;
+          try { account = JSON.parse(key); } catch { throw new Error('The Firebase service-account secret must contain valid JSON.'); }
+          if (account.type !== 'service_account' || account.project_id !== project || !account.private_key || !account.client_email) {
+            throw new Error('The Firebase service account must belong to the configured project.');
+          }
+          console.log('Firebase connection settings are present.');
+          JS
+
+      - name: Deploy to ranteach.web.app
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_RANTEACH }}
+          projectId: ${{ vars.FIREBASE_PROJECT_ID }}
+          channelId: live
+          firebaseToolsVersion: '15.34.0'
+
+      - name: Website address
+        run: echo 'Published to https://ranteach.web.app/' >> "$GITHUB_STEP_SUMMARY"
