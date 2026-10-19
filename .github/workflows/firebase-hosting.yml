@@ -1,4 +1,4 @@
-name: Publish RanTeach to Firebase
+name: Publish ranteach to Firebase
 
 on:
   push:
@@ -7,6 +7,9 @@ on:
 
 permissions:
   contents: read
+
+env:
+  FIREBASE_PROJECT_ID: ranteach
 
 concurrency:
   group: firebase-hosting-live
@@ -17,6 +20,9 @@ jobs:
     name: Check and publish the website
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Download repository
         uses: actions/checkout@v4
@@ -29,30 +35,18 @@ jobs:
       - name: Check pages, scripts and local assets
         run: node scripts/check-site.mjs
 
-      - name: Check Firebase connection
-        env:
-          FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_RANTEACH }}
-        run: |
-          node --input-type=module <<'JS'
-          const project = process.env.FIREBASE_PROJECT_ID;
-          const key = process.env.FIREBASE_SERVICE_ACCOUNT;
-          if (!project || !key) throw new Error('Set FIREBASE_PROJECT_ID and FIREBASE_SERVICE_ACCOUNT_RANTEACH in repository Actions settings.');
-          let account;
-          try { account = JSON.parse(key); } catch { throw new Error('The Firebase service-account secret must contain valid JSON.'); }
-          if (account.type !== 'service_account' || account.project_id !== project || !account.private_key || !account.client_email) {
-            throw new Error('The Firebase service account must belong to the configured project.');
-          }
-          console.log('Firebase connection settings are present.');
-          JS
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools@15.34.0 --no-audit --no-fund
+
+      - name: Authenticate the publishing workflow
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ranteach
+          workload_identity_provider: projects/376093963405/locations/global/workloadIdentityPools/ranteach-github/providers/ranteach-main
+          service_account: ranteach-github-deploy@ranteach.iam.gserviceaccount.com
 
       - name: Deploy to ranteach.web.app
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_RANTEACH }}
-          projectId: ${{ vars.FIREBASE_PROJECT_ID }}
-          channelId: live
-          firebaseToolsVersion: '15.34.0'
+        run: firebase deploy --project "$FIREBASE_PROJECT_ID" --only hosting --non-interactive
 
       - name: Website address
         run: echo 'Published to https://ranteach.web.app/' >> "$GITHUB_STEP_SUMMARY"

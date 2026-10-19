@@ -20,33 +20,31 @@ python3 -m http.server 8767 --directory public
 
 ## Firebase Hosting
 
-Целевой адрес: **https://ranteach.web.app/**. До подтверждённого создания Hosting site и успешного первого deployment этот адрес является желаемым, а не действующим адресом данной платформы.
+Целевой адрес: **https://ranteach.web.app/**. Проект Google Cloud — `ranteach`; в `firebase.json` задано имя Hosting site `ranteach`. Состояние публикации видно во вкладке [Actions](https://github.com/egorparfentyev/ranteach_site/actions).
 
-`firebase.json` указывает на Hosting site `ranteach`. Firebase project может иметь другой ID. Создание проекта, проверка владения сайтом и подключение GitHub требуют входа владельца в соответствующие сервисы.
-
-Для нового проекта после входа:
+Для ручной публикации владельцем проекта:
 
 ```sh
 firebase login
-firebase projects:list
-# Создайте или выберите свой Firebase project.
-firebase hosting:sites:create ranteach --project YOUR_PROJECT_ID
-firebase deploy --only hosting --project YOUR_PROJECT_ID
+firebase deploy --only hosting --project ranteach
 ```
 
-`ranteach` — глобально уникальный site ID. Если Firebase сообщит, что он уже занят другим проектом, использовать этот адрес без владения проектом нельзя: потребуется согласовать другой адрес.
+Версия Firebase CLI в автоматической публикации зафиксирована: `15.34.0`. Исходные файлы берутся из `public/`; маршруты физики и математики обслуживаются отдельно через их `index.html`.
 
 ## Автопубликация из GitHub Actions
 
 Workflow `.github/workflows/firebase-hosting.yml` выполняет проверки и публикует `public/` в live-канал после каждого push в `main`. Есть ручной запуск через Actions → Run workflow.
 
-Для подключения настройте в репозитории Settings → Secrets and variables → Actions:
+GitHub получает временные права через Google Workload Identity Federation. Загружать приватный ключ в GitHub Secrets и задавать переменные репозитория не требуется.
 
-- Repository variable **FIREBASE_PROJECT_ID** — фактический ID Firebase project.
-- Repository secret **FIREBASE_SERVICE_ACCOUNT_RANTEACH** — JSON сервисного аккаунта этого проекта с правами деплоя Firebase Hosting.
+- Project: `ranteach`, номер `376093963405`.
+- Provider: `projects/376093963405/locations/global/workloadIdentityPools/ranteach-github/providers/ranteach-main`.
+- Service account: `ranteach-github-deploy@ranteach.iam.gserviceaccount.com`.
+- Доступ ограничен числовыми ID владельца и репозитория, веткой `main` и файлом `.github/workflows/firebase-hosting.yml`.
+- Аккаунту публикации выданы роли Firebase Hosting Admin и Service Usage Consumer. Приватные ключи для него не создавались.
 
-Официальный способ создать сервисный аккаунт и сохранить его ключ непосредственно в GitHub Secret: `firebase init hosting:github`. Ключ не должен добавляться в файлы репозитория. В этом репозитории уже подготовлен workflow; после подключения сохраните один live workflow, чтобы не запускать две публикации.
+При переносе репозитория или переименовании workflow нужно обновить условие доверия в Google Cloud. Временные файлы `gha-creds-*.json` исключены из Git и автоматически удаляются действием авторизации.
 
-После настройки откройте первый запуск Actions и убедитесь, что шаг Deploy завершился успешно. Обновление репозитория считается опубликованным только после успешного запуска; одна загрузка workflow не подтверждает работающую интеграцию.
+Публикация подтверждена только после успешного шага **Deploy to ranteach.web.app**. Если шаг завершился ошибкой, прежняя опубликованная версия продолжает работать.
 
-Документация Firebase: https://firebase.google.com/docs/hosting/github-integration
+Документация: [Google GitHub Auth](https://github.com/google-github-actions/auth), [Firebase CLI для CI](https://firebase.google.com/docs/cli#cli-ci-systems).
