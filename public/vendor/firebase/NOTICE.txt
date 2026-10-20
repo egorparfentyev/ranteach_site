@@ -1,0 +1,4 @@
+Firebase JavaScript SDK 13.0.0 — Google LLC and contributors.
+https://github.com/firebase/firebase-js-sdk
+Distributed under the Apache License 2.0; bundled files retain their license notices.
+https://www.apache.org/licenses/LICENSE-2.0

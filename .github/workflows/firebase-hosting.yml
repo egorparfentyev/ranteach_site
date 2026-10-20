@@ -33,7 +33,9 @@ jobs:
           node-version: '24'
 
       - name: Check pages, scripts and local assets
-        run: node scripts/check-site.mjs
+        run: |
+          node scripts/check-site.mjs
+          node scripts/check-learning.mjs
 
       - name: Install Firebase CLI
         run: npm install --global firebase-tools@15.34.0 --no-audit --no-fund
