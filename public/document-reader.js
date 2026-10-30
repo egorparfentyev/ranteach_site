@@ -1,0 +1,2 @@
+/* In-page enlargement works for both physics papers and mathematics criteria. */
+(function(){document.addEventListener('click',event=>{const button=event.target.closest('[data-doc-zoom]');if(!button)return;const container=button.closest('.px-reader,.px-rubric,.math-inline-criteria');if(!container)return;const zoom=container.classList.toggle('document-enlarged');button.setAttribute('aria-pressed',String(zoom));button.textContent=zoom?'Уместить по ширине':'Увеличить страницы';});})();

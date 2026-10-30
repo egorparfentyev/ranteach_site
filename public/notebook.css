@@ -1,0 +1,12 @@
+/* Shared notebook identity; subject-specific saturated accents. */
+:root{--accent:#7138cf;--accent-rgb:113,56,207;--ink:#252037;--muted:#625b73;--line:#dcd2ed;--orange:var(--accent)}
+body:has(.math-hero),body:has(.math-header-progress){--accent:#087b58;--accent-rgb:8,123,88;--ink:#18382e;--muted:#526d62;--line:#cadfd5}
+body{background-color:#f5f4f9;background-image:linear-gradient(rgba(var(--accent-rgb),.055) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--accent-rgb),.055) 1px,transparent 1px);background-size:24px 24px;color:var(--ink)}
+.main,.content{background:transparent}.sidebar{border-right:1px solid var(--line);box-shadow:6px 0 30px #28204408}.topbar{background:#ffffffed;backdrop-filter:blur(14px)}
+.card,.module,.stat,.math-stats>div,.course-card,.nw-topic-card{background:#fff;border:1px solid var(--line);box-shadow:0 5px 18px #24124008;border-radius:18px}.module:hover,.course-card:hover{border-color:var(--accent);box-shadow:0 10px 26px rgba(var(--accent-rgb),.12)}
+.hero,.math-hero{background:linear-gradient(125deg,#281644,#7138cf);box-shadow:0 15px 35px rgba(var(--accent-rgb),.2);border:1px solid #ffffff30}.math-hero{background:linear-gradient(125deg,#103e32,#087b58)}
+.hero::after,.math-hero::after{content:'x = x₀ + vt    ∑ F = ma    Δ    π    ∫';position:absolute;right:20px;bottom:12px;font:italic 19px Georgia,serif;letter-spacing:5px;color:#ffffff26;pointer-events:none}
+.nav button{color:var(--muted);font-weight:600}.nav button.active{background:var(--accent);color:#fff;box-shadow:0 5px 14px rgba(var(--accent-rgb),.2)}.primary{background:var(--accent);font-weight:700;box-shadow:0 4px 12px rgba(var(--accent-rgb),.18)}
+.pagehead h1{font-size:clamp(27px,3vw,38px);letter-spacing:-1px;color:var(--ink)}.pagehead p,.module p,.card p,.prose p{color:var(--muted)}.module h3{font-size:17px;color:var(--ink)}.module p{font-size:14px}.tag{border:1px solid var(--line)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+@media(max-width:700px){.hero::after,.math-hero::after{font-size:13px;letter-spacing:1px}.module{padding:20px}}

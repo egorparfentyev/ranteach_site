@@ -1,0 +1,8 @@
+import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
+const root=new URL('../public/',import.meta.url),c={window:{RTLearning:{esc:s=>String(s)}},document:{},console};vm.createContext(c);vm.runInContext(fs.readFileSync(new URL('physics-exams.js',root),'utf8'),c);const {papers,score,max}=c.window.RTPhysicsExams;
+for(const [year,p]of Object.entries(papers)){assert.equal(p.key.length,16);assert.equal(p.key.reduce((s,k,i)=>s+score(i+1,k,k),0),23);assert.equal(Array.from({length:22},(_,i)=>max(i+1)).reduce((s,n)=>s+n),39);for(let page=1;page<=p.pages;page++)assert(fs.statSync(new URL(`physics-exams/${year}/page-${page}.webp`,root)).size>1000);for(const pages of Object.values(p.rubrics))for(const page of pages)assert(page>=p.criteria&&page<=p.pages);assert.equal(score(1,'',p.key[0]),0);}
+assert.equal(score(1,'213','213'),2);assert.equal(score(1,'214','213'),1);assert.equal(score(1,'244','213'),0);assert.equal(score(1,'2131','213'),0);
+assert.equal(score(14,'31','13'),2);assert.equal(score(14,'12','13'),1);assert.equal(score(14,'1','13'),1);assert.equal(score(14,'123','13'),0);assert.equal(score(14,'24','13'),0);
+assert.equal(score(9,'2,8','2.8'),1);assert.equal(score(9,'2.8 Н','2.8'),0);assert.equal(score(9,'Infinity','2.8'),0);assert.equal(score(3,'04','4'),0);
+const raw=fs.readFileSync(new URL('math/data.js',root),'utf8'),data=JSON.parse(raw.slice(raw.indexOf('=')+1).trim().replace(/;$/,''));for(const t of data.tasks.filter(t=>t.kind==='written'))for(const page of t.rubricPages)assert(fs.existsSync(new URL(`math/images/criteria-${t.year}-${page}.webp`,root)));
+console.log('Passed: 2 complete physics papers, 54 document pages, partial-credit grading, 39-point totals and inline mathematics criteria.');
