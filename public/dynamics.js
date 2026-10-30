@@ -75,7 +75,7 @@ function bind(){
 }
 window.RTNewton={view,illustration,readout,progressData};
 if(typeof render==='function'){
- const oldHome=home;home=function(){return banner()+oldHome();};const oldMaterials=materials;materials=function(){return banner()+oldMaterials();};const oldLab=labView;labView=function(){return banner('lab')+oldLab();};const oldProgress=progress;progress=function(){return banner()+oldProgress();};
+ const oldMaterials=materials;materials=function(){return banner()+oldMaterials();};const oldLab=labView;labView=function(){return banner('lab')+oldLab();};
  let ownerState=state;const oldRender=render;render=function(){stop();if(ownerState!==state){ownerState=state;resetAttempt();taskIndex=0;taskFilter='all';sourceFilter='all';reviewIds=[];tab='route';}oldRender();bind();L.typeset();};document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});render();
 }
 })();
