@@ -2,3 +2,5 @@
 @media(max-width:700px){.px-catalog{grid-template-columns:1fr}.px-answer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.px-reader{padding:10px}.px-reader-bar{gap:7px}.px-reader-bar button{padding:9px 12px;font-size:12px}.px-answer-sheet{padding:20px 15px}.px-details{padding:15px}.px-status{padding:18px}.px-document{max-height:650px}.px-finish{padding:24px}.px-finish p{font-size:16px}.px-root h2{font-size:23px}}
 
 .px-native-list{display:grid;gap:24px;margin:24px 0}.px-native-task{background:white;border:1px solid var(--line);border-radius:18px;padding:28px;box-shadow:0 5px 20px #35215408}.px-native-task p{font-size:18px;line-height:1.8;max-width:800px;margin:18px 0}.px-native-task input{display:block;margin:10px 0;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit;max-width:100%}.px-native-task summary{cursor:pointer;font-weight:650;padding:12px 0;color:var(--orange)}
+
+.px-native-task .px-task-number{position:static;display:block;margin:0 0 18px;padding:0;font-size:22px;line-height:1.4}.px-native-task>p{margin:0 0 24px}.px-native-task>label{display:block;margin-top:18px}
