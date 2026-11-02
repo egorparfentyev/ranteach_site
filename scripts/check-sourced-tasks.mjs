@@ -1,0 +1,20 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const c={window:{},practice:()=>''};vm.createContext(c);
+vm.runInContext(fs.readFileSync('public/math/data.js','utf8')+';globalThis.mathTasks=MATH_DATA.tasks;',c);
+vm.runInContext(fs.readFileSync('public/verified-physics.js','utf8'),c);
+const byId=new Map(c.mathTasks.map(t=>[t.id,t]));
+const physical=new Map(c.window.RTVerifiedPhysics.map(t=>[t.id,t]));
+for(const tasks of [c.mathTasks,c.window.RTVerifiedPhysics])assert.equal(new Set(tasks.map(t=>t.id)).size,tasks.length,'Duplicate task ID');
+for(const t of c.mathTasks.filter(t=>t.verifiedOn)){assert.ok(t.sourceUrl&&t.solution&&t.answer);if(t.kind==='written')assert.ok(t.criteria);}
+for(const [id,result] of [[333143,15*3/4],[339544,180-40],[339370,9/Math.sqrt(1-(4/5)**2)],[412198,160-160/2**5],[314507,5]])assert.ok(Math.abs(Number(byId.get('sdamgia-'+id).answer.replace(',','.'))-result)<1e-9);
+assert.equal(5/5,8/(5+11)+.5);
+for(const x of [-2,1])assert.equal(x**4,(x-2)**2);
+for(const x of [-4,-1,1])assert.equal(x**3+4*x*x-x-4,0);
+for(const x of [2-Math.sqrt(3),2+Math.sqrt(3)])assert.ok(Math.abs((x-2)**4-(x-2)**2-6)<1e-10);
+for(let x=-5;x<=5;x+=.125)assert.equal((x-3)*(2*x+3)<-7,x>-.5&&x<2);
+for(const [id,result] of [[25379,9.6e-16/1.6e-19/1000],[29602,60*2/3],[29745,3e8/25/1e6],[29838,900/(.5*30)],[25219,Math.round(330/520*10)/10],[25069,6500*.05]])assert.ok(Math.abs(Number(physical.get(id).answer.replace(',','.'))-result)<1e-9);
+assert.ok(physical.get(1668).criteria.includes('2 балла'));
+assert.ok(!c.practice().includes('${t.criteria'));
+console.log('Passed: sourced task IDs, numerical answers, algebra roots and intervals, written criteria.');
