@@ -38,6 +38,7 @@ jobs:
           node scripts/check-learning.mjs
           node scripts/check-dynamics.mjs
           node scripts/check-physics-exams.mjs
+          node scripts/check-graphics.mjs
 
       - name: Install Firebase CLI
         run: npm install --global firebase-tools@15.34.0 --no-audit --no-fund
