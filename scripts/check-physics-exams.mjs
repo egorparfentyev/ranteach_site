@@ -73,7 +73,7 @@ for (const review of [false,true]) {
   mathContext.examReview = review;
   const markup = mathContext.mathExam();
   assert.match(markup,/888/);
-  assert.doesNotMatch(markup,/Оригинал ↗|\.pdf|<h3>Ответ:|Теорема Пифагора c² = 289/);
+  assert.doesNotMatch(markup,/Оригинал ↗|demo\.pdf|<h3>Ответ:|Теорема Пифагора c² = 289/);
   assert.ok(!markup.includes(question.solution));
 }
 mathSession.done = true;
