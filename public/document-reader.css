@@ -10,3 +10,8 @@
 .verified-figure caption {text-align:left;font-weight:650;padding-bottom:.5rem;}
 .verified-figure th,.verified-figure td {border-bottom:1px solid #ddcfe9;padding:.4rem .65rem;text-align:left;}
 .verified-physics [hidden] {display:none;}
+.verified-physics {margin-bottom:2rem;}
+.verified-pickers,.verified-controls {display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin:1rem 0;}
+.verified-pickers label {display:grid;gap:.4rem;max-width:100%;}
+.verified-pickers select {max-width:100%;min-height:2.6rem;padding:.35rem .6rem;}
+.verified-controls {justify-content:space-between;}
