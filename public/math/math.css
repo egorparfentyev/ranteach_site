@@ -3,3 +3,7 @@
 .math-theory-body .important{background:#f4f6ed;border-left:3px solid #adc09d;border-radius:0 9px 9px 0;padding:16px 19px;margin:20px 0}.math-theory-body .important>div{margin-top:12px}.math-theory-body .important strong,.math-theory-body .important b{display:block;margin-bottom:7px}.solution-steps{padding-left:23px;line-height:1.95}.solution-steps li+li{margin-top:13px}
 .bank-graph-choices {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(165px,100%),1fr));gap:12px;margin:1rem 0;}
 .bank-graph-choices svg {display:block;width:100%;height:auto;font:14px system-ui,sans-serif;}
+.demo-wheel-table {overflow-x:auto;margin-block:1rem;}
+.demo-wheel-table table {width:100%;border-collapse:collapse;text-align:center;}
+.demo-wheel-table caption {padding-bottom:.6rem;font-weight:600;}
+.demo-wheel-table th,.demo-wheel-table td {border:1px solid #bdcfc5;padding:.4rem;}

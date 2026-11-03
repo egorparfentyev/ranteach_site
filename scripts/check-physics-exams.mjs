@@ -39,6 +39,12 @@ for (const year of [2025, 2026]) {
   function assertHidden() {
     assert.doesNotMatch(view(), /data-px-criteria|Эталон|<summary>Ответ<\/summary>/);
   }
+  const active = view();
+  assert.equal((active.match(/class="px-native-task"/g) || []).length,22);
+  assert.equal((active.match(/<input data-px-answer=/g) || []).length,16);
+  assert.ok(!active.includes('перенос в карточки'));
+  for (const match of active.matchAll(/<img[^>]+src="([^"]+)"/g))
+    assert.ok(fs.existsSync(new URL(match[1],root)), match[1]);
   assertHidden();
   criteriaButton.onclick();
   assertHidden();
@@ -81,3 +87,10 @@ const resultMarkup = mathContext.mathExam();
 assert.match(resultMarkup, /Твой ответ: <b>888<\/b>/);
 assert.match(resultMarkup, /<h3>Ответ: 17<\/h3>/);
 assert.ok(resultMarkup.includes(question.solution));
+
+for (const year of [2026,2027]) {
+  const tasks = data.tasks.filter(t => t.source==='demo' && Number(t.year)===year);
+  assert.equal(tasks.length,25);
+  assert.ok(tasks.every(t => t.solution && !/images\/demo-/.test(t.html)));
+  assert.doesNotMatch(data.contexts['demo-'+year],/images\/demo-/);
+}
