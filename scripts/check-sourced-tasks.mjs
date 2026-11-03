@@ -7,6 +7,11 @@ vm.runInContext(fs.readFileSync('public/verified-physics.js','utf8'),c);
 const byId=new Map(c.mathTasks.map(t=>[t.id,t]));
 const physical=new Map(c.window.RTVerifiedPhysics.map(t=>[t.id,t]));
 for(const tasks of [c.mathTasks,c.window.RTVerifiedPhysics])assert.equal(new Set(tasks.map(t=>t.id)).size,tasks.length,'Duplicate task ID');
+// Flag number-only variants before a curated card reaches Hosting. Keep TeX but omit drawings and decorative markup.
+function structure(text){return text.replace(/<svg\b[\s\S]*?<\/svg>/gi,' ').replace(/<span[^>]*data-tex="([^"]*)"[^>]*><\/span>/gi,' $1 ').replace(/<[^>]+>/g,' ').normalize('NFKC').toLowerCase().replace(/[−–]/g,'-').replace(/\d+(?:[.,]\d+)?/g,'#').replace(/\s+/g,' ').trim();}
+for(const items of [c.mathTasks.filter(t=>t.verifiedOn),c.window.RTVerifiedPhysics]){
+ const seen=new Map();for(const t of items){const k=structure(t.html||t.q);assert.ok(!seen.has(k),`Same wording and structure after removing numbers: ${seen.get(k)} and ${t.id}`);seen.set(k,t.id);}
+}
 for(const t of c.mathTasks.filter(t=>t.verifiedOn)){assert.ok(t.sourceUrl&&t.solution&&t.answer);if(t.kind==='written')assert.ok(t.criteria);}
 for(const [id,result] of [[333143,15*3/4],[339544,180-40],[339370,9/Math.sqrt(1-(4/5)**2)],[412198,160-160/2**5],[314507,5]])assert.ok(Math.abs(Number(byId.get('sdamgia-'+id).answer.replace(',','.'))-result)<1e-9);
 assert.equal(5/5,8/(5+11)+.5);
