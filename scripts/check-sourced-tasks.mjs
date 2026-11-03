@@ -29,3 +29,12 @@ for(const [code,value] of Object.entries({'097E41':1/5-41/50,'711640':21/5*3/7,'
 for(const [code,value] of Object.entries({'D9EE45':2*2.1*10,'DF3949':2*10*(4-1),'F23E41':2-1.6,'01A441':10+1,'02ED46':179-4,'7F5A40':1*10*20,'F2EB40':(5-(-5))/1,'01FB46':(1050-300)/5,'4BF745':6*15/(25-15)}))assert.ok(Math.abs(Number(physical.get(code).answer.replace(',','.'))-value)<1e-9);
 for(const t of [...c.mathTasks,...c.window.RTVerifiedPhysics].filter(t=>t.sourceGuid))assert.match(t.sourceGuid,/^[0-9a-f]{32}$/i);
 console.log('Passed: sourced task IDs, numerical answers, algebra roots and intervals, written criteria.');
+// Exercise the delegated form events: a first correct answer counts, repeated or revealed answers do not.
+{
+ const handlers={},store={verifiedSolved:[],verifiedSeen:[],attempts:0,correct:0,activity:{}};
+ const env={window:{},practice:()=>'',document:{addEventListener:(name,callback)=>handlers[name]=callback},state:store,save:()=>{},today:()=> 'test-day'};vm.createContext(env);vm.runInContext(fs.readFileSync('public/verified-physics.js','utf8'),env);
+ function submit(id,value,open=false){const status={},article={dataset:{verifiedTask:id},querySelector:()=>({open})};handlers.submit({target:{matches:()=>true,closest:()=>article,querySelector:q=>q==='input'?{value}:status},preventDefault(){}});return status.textContent;}
+ assert.match(submit('F23E41','0.4'),/засчитана/);assert.equal(store.activity['test-day'],1);submit('F23E41','0,4');assert.equal(store.activity['test-day'],1);
+ handlers.toggle({target:{matches:()=>true,open:true,closest:()=>({dataset:{verifiedTask:'02ED46'}})}});submit('02ED46','175');assert.equal(store.activity['test-day'],1);assert.ok(!store.verifiedSolved.includes('02ED46'));
+ assert.match(submit('DF3949','0'),/не совпало/);assert.match(submit('DF3949','60'),/засчитана/);assert.equal(store.activity['test-day'],2);
+}
