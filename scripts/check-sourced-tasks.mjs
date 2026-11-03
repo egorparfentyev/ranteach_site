@@ -17,4 +17,10 @@ for(let x=-5;x<=5;x+=.125)assert.equal((x-3)*(2*x+3)<-7,x>-.5&&x<2);
 for(const [id,result] of [[25379,9.6e-16/1.6e-19/1000],[29602,60*2/3],[29745,3e8/25/1e6],[29838,900/(.5*30)],[25219,Math.round(330/520*10)/10],[25069,6500*.05]])assert.ok(Math.abs(Number(physical.get(id).answer.replace(',','.'))-result)<1e-9);
 assert.ok(physical.get(1668).criteria.includes('2 балла'));
 assert.ok(!c.practice().includes('${t.criteria'));
+// Recalculate answers from the data of the official records, independently of their worked text.
+for(const [code,value] of Object.entries({'494C47':180/6**2,'4F5745':180-64,'41D84A':6*(8*Math.sqrt(3))/Math.sqrt(3),'FE3D40':90-30,'F77141':24/2,'F42F42':5*(59-32)/9,'F89C42':2**(8+17-20),'FD6745':(80-12)/80})){
+  const t=byId.get('fipi-'+code);assert.ok(t.sourceUrl.endsWith('qid='+code));assert.ok(Math.abs(Number(t.answer.replace(',','.'))-value)<1e-9);
+}
+for(const [code,value] of Object.entries({'F23E41':2-1.6,'01A441':10+1,'02ED46':179-4,'7F5A40':1*10*20,'F2EB40':(5-(-5))/1,'01FB46':(1050-300)/5,'4BF745':6*15/(25-15)}))assert.ok(Math.abs(Number(physical.get(code).answer.replace(',','.'))-value)<1e-9);
+for(const t of [...c.mathTasks,...c.window.RTVerifiedPhysics].filter(t=>t.sourceGuid))assert.match(t.sourceGuid,/^[0-9a-f]{32}$/i);
 console.log('Passed: sourced task IDs, numerical answers, algebra roots and intervals, written criteria.');

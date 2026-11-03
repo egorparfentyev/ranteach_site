@@ -4,3 +4,9 @@
 .px-native-list{display:grid;gap:24px;margin:24px 0}.px-native-task{background:white;border:1px solid var(--line);border-radius:18px;padding:28px;box-shadow:0 5px 20px #35215408}.px-native-task p{font-size:18px;line-height:1.8;max-width:800px;margin:18px 0}.px-native-task input{display:block;margin:10px 0;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit;max-width:100%}.px-native-task summary{cursor:pointer;font-weight:650;padding:12px 0;color:var(--orange)}
 
 .px-native-task .px-task-number{position:static;display:block;margin:0 0 18px;padding:0;font-size:22px;line-height:1.4}.px-native-task>p{margin:0 0 24px}.px-native-task>label{display:block;margin-top:18px}
+.verified-figure {margin:1rem 0;overflow-x:auto;}
+.verified-figure svg {display:block;width:100%;max-width:38rem;height:auto;font:16px system-ui,sans-serif;}
+.verified-figure table {border-collapse:collapse;font-size:1rem;}
+.verified-figure caption {text-align:left;font-weight:650;padding-bottom:.5rem;}
+.verified-figure th,.verified-figure td {border-bottom:1px solid #ddcfe9;padding:.4rem .65rem;text-align:left;}
+.verified-physics [hidden] {display:none;}
