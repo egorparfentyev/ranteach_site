@@ -38,3 +38,22 @@ console.log('Passed: sourced task IDs, numerical answers, algebra roots and inte
  handlers.toggle({target:{matches:()=>true,open:true,closest:()=>({dataset:{verifiedTask:'02ED46'}})}});submit('02ED46','175');assert.equal(store.activity['test-day'],1);assert.ok(!store.verifiedSolved.includes('02ED46'));
  assert.match(submit('DF3949','0'),/не совпало/);assert.match(submit('DF3949','60'),/засчитана/);assert.equal(store.activity['test-day'],2);
 }
+// November bank expansion: verify circuit topology and conditional probability answers.
+for(const [id,value] of Object.entries({'132BF1':220/(110/4),'9449F4':1/((1/2)/2),'9729F4':2.5*(4/1),'B61376':3/6,'54881C':1/(3/9),'882BF2':2,'D38070':1.5,'AFDA75':1/(1/2+1/2)+1/(1/6+1/6),'677676':30/(5+10),'46E193':1/(1/6+1/6)+3+5,'515CFE':1e6/(500*200),'67DDD0':400*2*(230-30)/1000,'3DF797':1e6/(500*10)}))assert.equal(Number(physical.get(id).answer),value,id);
+for(const [id,value] of Object.entries({'34D340':(20+(206-20-8-12)/2)/206,'C0AE4C':1-.02,'AF1E46':1/10,'C67C4E':13/20,'7407F8':13/20}))assert.equal(Number(byId.get('fipi-'+id).answer),value,id);
+let favourable=0;for(let a=1;a<=6;a++)for(let b=1;b<=6;b++)if([3,4,5].includes(a+b))favourable++;
+assert.equal(Number(byId.get('fipi-27FFA4').answer),favourable/36);
+// Solve each quadratic branch independently, filter its domain, then count distinct x values.
+function roots(a,b,c){const delta=b*b-4*a*c;if(delta<0)return [];return delta===0?[-b/(2*a)]:[(-b-Math.sqrt(delta))/(2*a),(-b+Math.sqrt(delta))/(2*a)];}
+function count(values){return new Set(values.map(x=>x.toFixed(8))).size;}
+for(const m of [-10,-6.25,-3,-2,-1,-.5,-.25,-.1,0,.1,1,5.99,6,6.25,7,10]){
+ const piece=roots(1,6,7-m).filter(x=>x>=-4).concat(m<6?[m-10]:[]);
+ assert.equal(count(piece)===2,m===-2||m>-1&&m<6,'90FF4E at '+m);
+ const mod=roots(-1,-5,-m).filter(x=>x<0).concat(roots(1,-1,-m).filter(x=>x>=0));
+ assert.equal(count(mod)===2,m===-.25||m===6.25,'F486F7 at '+m);
+ const shifted=roots(1,17,72-m).filter(x=>x<-8).concat(roots(1,11,24-m).filter(x=>x>=-8));
+ assert.equal(count(shifted)===3,m===-.25||m===0,'675547 at '+m);
+ const hole=roots(-.5,0,-m).filter(x=>x<0&&x!==-2).concat(roots(.5,0,-m).filter(x=>x>=0));
+ assert.equal(count(hole)===0,m===-2,'D35EB0 at '+m);
+}
+for(const id of ['90FF4E','F486F7','675547','D35EB0'])assert.equal(byId.get('fipi-'+id).kind,'written');

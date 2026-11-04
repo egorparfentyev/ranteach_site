@@ -7,3 +7,6 @@
 .demo-wheel-table table {width:100%;border-collapse:collapse;text-align:center;}
 .demo-wheel-table caption {padding-bottom:.6rem;font-weight:600;}
 .demo-wheel-table th,.demo-wheel-table td {border:1px solid #bdcfc5;padding:.4rem;}
+.math-solution figure {margin:1.5rem 0;max-width:100%;}
+.math-solution figure img {display:block;width:100%;max-width:680px;height:auto;margin-inline:auto;}
+.math-solution figcaption {font-size:.9rem;color:var(--muted);margin-top:.6rem;}
