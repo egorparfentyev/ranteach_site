@@ -57,3 +57,6 @@ for(const m of [-10,-6.25,-3,-2,-1,-.5,-.25,-.1,0,.1,1,5.99,6,6.25,7,10]){
  assert.equal(count(hole)===0,m===-2,'D35EB0 at '+m);
 }
 for(const id of ['90FF4E','F486F7','675547','D35EB0'])assert.equal(byId.get('fipi-'+id).kind,'written');
+// Check new inequality intervals against the original expressions, including boundaries.
+const inequalities=[['72B7F0',1,x=>-9-6*x>9*x+9,x=>x< -1.2],['7FAC18',2,x=>3-2*x>=8*x-1,x=>x<=.4],['AA0F48',3,x=>x+2.7<=0&&x+4>=1,x=>x>=-3&&x<=-2.7],['F09B7D',2,x=>-27+3*x>0&&6-3*x< -6,x=>x>9],['19EB75',1,x=>-12+3*x>0&&9-4*x> -3,x=>false],['081E50',3,x=>-9+3*x>0&&2-3*x> -10,x=>x>3&&x<4],['5F475F',4,x=>x+3.2<=0&&x+1<=-1,x=>x<=-3.2],['2FAC43',2,x=>x*x-36>0,x=>x< -6||x>6],['E34C05',1,x=>81*x*x<=16,x=>x>=-4/9&&x<=4/9],['3CD425',2,x=>x-x*x>=0,x=>x>=0&&x<=1],['150B1F',3,x=>81*x*x>64,x=>x< -8/9||x>8/9]];
+for(const [id,key,condition,interval] of inequalities){assert.equal(Number(byId.get('fipi-'+id).answer),key,id);for(let i=-100;i<=100;i++)assert.equal(condition(i/10),interval(i/10),id+' at '+i/10);}
