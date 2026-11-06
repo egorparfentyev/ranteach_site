@@ -8,7 +8,7 @@ const byId=new Map(c.mathTasks.map(t=>[t.id,t]));
 const physical=new Map(c.window.RTVerifiedPhysics.map(t=>[t.id,t]));
 for(const tasks of [c.mathTasks,c.window.RTVerifiedPhysics])assert.equal(new Set(tasks.map(t=>t.id)).size,tasks.length,'Duplicate task ID');
 // Flag number-only variants before a curated card reaches Hosting. Keep TeX but omit drawings and decorative markup.
-function structure(text){return text.replace(/<svg\b[\s\S]*?<\/svg>/gi,' ').replace(/<span[^>]*data-tex="([^"]*)"[^>]*><\/span>/gi,' $1 ').replace(/<[^>]+>/g,' ').normalize('NFKC').toLowerCase().replace(/[−–]/g,'-').replace(/\d+(?:[.,]\d+)?/g,'#').replace(/\s+/g,' ').trim();}
+function structure(text){return text.replace(/<svg\b[\s\S]*?<\/svg>/gi, svg => ' ' + (svg.match(/aria-label="([^"]*)"/i)?.[1] || '') + ' ').replace(/<span[^>]*data-tex="([^"]*)"[^>]*><\/span>/gi,' $1 ').replace(/<[^>]+>/g,' ').normalize('NFKC').toLowerCase().replace(/[−–]/g,'-').replace(/\d+(?:[.,]\d+)?/g,'#').replace(/\s+/g,' ').trim();}
 for(const items of [c.mathTasks.filter(t=>t.verifiedOn),c.window.RTVerifiedPhysics]){
  const seen=new Map();for(const t of items){const k=structure(t.html||t.q);assert.ok(!seen.has(k),`Same wording and structure after removing numbers: ${seen.get(k)} and ${t.id}`);seen.set(k,t.id);}
 }
