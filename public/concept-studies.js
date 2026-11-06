@@ -144,6 +144,37 @@
     }
   }
   customElements.define('rt-root-study',RootStudy);
+  class GravityWorkStudy extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const root = this.attachShadow({mode:'open'});
+      root.innerHTML = styles + `<details><summary>Работа тяжести на пути вниз и обратно вверх</summary>
+        <p>Рассмотрим тело массой 1 кг при g = 10 м/с². Оно проходит от высоты 4 м до пола, затем поднимается на 3 м. Передвигай точку по пути и сравни работу на каждом участке с работой от начала движения.</p>
+        <label>Положение на пути <input type="range" min="0" max="100" value="0"></label>
+        <svg viewBox="0 0 440 250" role="img" aria-label="Спуск с четырёх метров и подъём до трёх метров"></svg>
+        <output></output>
+        <p>На спуске тяжесть помогает движению и совершает положительную работу. На подъёме работа отрицательна. Суммарная работа от начальной до текущей высоты равна mg(h₀ − h). Сила удара о пол при этом совершает свою работу.</p></details>`;
+      const draw = () => {
+        const progress=Number(root.querySelector('input').value)/100;
+        const down=progress<=.5;
+        const height=down?4*(1-progress*2):3*(progress*2-1);
+        const x=down?105:275, y=210-height*40;
+        const total=10*(4-height);
+        const leg=down?total:-10*height;
+        root.querySelector('svg').innerHTML =
+          `<path d="M35 222H405" stroke="#968a9f" stroke-width="4"/>
+          <path d="M105 50V210M275 210V90" stroke="#bcb1cc" stroke-width="3" stroke-dasharray="6 5" fill="none"/>
+          <g fill="#51445f" font-size="16"><text x="50" y="33">Начало · 4 м</text><text x="222" y="70">Конец · 3 м</text><text x="180" y="245">Пол · 0 м</text></g>
+          <circle cx="${x}" cy="${y}" r="13" fill="#8256b1"/>
+          <text x="${x+28}" y="${y+6}" font-size="17" fill="#51445f">h = ${format(height)} м</text>`;
+        root.querySelector('output').innerHTML =
+          `${down?'Спуск':'Подъём после отскока'}<br>Работа на текущем участке = ${format(leg)} Дж<br>
+          Работа от начала пути = 1 · 10 · (4 − ${format(height)}) = ${format(total)} Дж`;
+      };
+      root.addEventListener('input',draw);draw();
+    }
+  }
+  customElements.define('rt-gravity-work-study',GravityWorkStudy);
   customElements.define('rt-sequence-study',SequenceStudy);
   customElements.define('rt-collision-study',CollisionStudy);
 })();
