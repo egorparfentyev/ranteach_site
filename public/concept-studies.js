@@ -70,6 +70,51 @@
     }
     disconnectedCallback(){cancelAnimationFrame(this.frame);this.frame=0;}
   }
+  class RayStudy extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const root = this.attachShadow({mode:'open'});
+      const control = (title, initialSign, initialValue) => `<fieldset><legend>${title}</legend>
+        <label>x <select aria-label="Знак ограничения">${['>','≥','<','≤'].map(sign =>
+          `<option ${sign===initialSign?'selected':''}>${sign}</option>`).join('')}</select>
+        <input type="range" min="-5" max="5" value="${initialValue}" aria-label="Граница луча"> <b></b></label></fieldset>`;
+      root.innerHTML = styles + `<details><summary>Как найти пересечение лучей</summary>
+        <p>Решение системы должно удовлетворять обоим условиям. Верхние две строки показывают условия отдельно, нижняя — их общую часть. Пустой кружок исключает граничное число, закрашенный включает его.</p>
+        ${control('Первое условие','≥',-2)}${control('Второе условие','≤',3)}
+        <svg viewBox="0 0 440 166" role="img" aria-label="Два луча и их пересечение"></svg><output></output>
+        <p>Поставь обе границы в ноль. Проверь, при каких знаках общим решением останется одно число.</p></details>`;
+      const draw = () => {
+        const ranges = [...root.querySelectorAll('fieldset')].map(group => {
+          const v = Number(group.querySelector('input').value), sign = group.querySelector('select').value;
+          group.querySelector('b').textContent = v;
+          return sign==='>' || sign==='≥' ? [v,Infinity,sign==='≥',false] : [-Infinity,v,false,sign==='≤'];
+        });
+        const lower = Math.max(...ranges.map(r=>r[0])), upper = Math.min(...ranges.map(r=>r[1]));
+        const includeLower = ranges.every(r=>r[0]!==lower || r[2]);
+        const includeUpper = ranges.every(r=>r[1]!==upper || r[3]);
+        const empty = lower>upper || (lower===upper && !(includeLower && includeUpper));
+        const pos = v => 220 + 32*Math.max(-6,Math.min(6,v));
+        ranges.push([lower,upper,includeLower,includeUpper]);
+        root.querySelector('svg').innerHTML = ranges.map(([a,b,ac,bc],i)=>{
+          const y=25+i*53, color=['#287866','#94651e','#422879'][i];
+          const axis=`<path d="M22 ${y}H418" stroke="#bac8c2"/>`;
+          if(i===2 && empty) return axis+`<text x="220" y="${y+22}" text-anchor="middle">∅</text>`;
+          const points=a===b?[[a,true]]:[[a,ac],[b,bc]];
+          return axis+`<path d="M${pos(a)} ${y}H${pos(b)}" stroke="${color}" stroke-width="5"/>`+
+            points.filter(([v])=>Number.isFinite(v)).map(([v,closed])=>
+            `<circle cx="${pos(v)}" cy="${y}" r="5" stroke="${color}" stroke-width="2" fill="${closed?color:'white'}"/>
+            <text x="${pos(v)}" y="${y+22}" text-anchor="middle">${v}</text>`).join('');
+        }).join('');
+        const interval=(includeLower?'[':'(')+(Number.isFinite(lower)?lower:'−∞')+'; '+
+          (Number.isFinite(upper)?upper:'+∞')+(includeUpper?']':')');
+        root.querySelector('output').textContent = empty?'Общих решений нет.':
+          lower===upper?'Единственное общее решение: x = '+lower:'Общая часть: '+interval;
+      };
+      root.addEventListener('input',draw);
+      draw();
+    }
+  }
+  customElements.define('rt-ray-study',RayStudy);
   customElements.define('rt-sequence-study',SequenceStudy);
   customElements.define('rt-collision-study',CollisionStudy);
 })();
