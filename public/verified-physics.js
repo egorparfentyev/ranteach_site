@@ -91,12 +91,32 @@ const examNumbers=[...new Set(tasks.map(t=>t.n))].sort((a,b)=>a-b);
 function earned(id){return typeof state!=="undefined"&&state.verifiedSolved?.includes(String(id));}
 function card(t){return `<article class="px-native-task" data-verified-task="${t.id}"><h3 class="px-task-number">№ ${t.n} · ${t.type}</h3><p class="small muted">${t.source}${earned(t.id)?" · Решено самостоятельно":""}</p><p>${t.q}</p>${t.type==="Неупругое столкновение"?"<rt-collision-study></rt-collision-study>":""}${t.figure?`<div class="verified-figure">${t.figure}</div>`:''}${t.n<17?`<form data-verified-check><label>Твой ответ <input required inputmode="decimal" autocomplete="off" aria-label="Ответ на задание ${t.id}" placeholder="${t.unit||'Цифры в нужном порядке'}"></label><button class="secondary">Проверить</button><p role="status"></p></form>`:'<p class="small muted">Запишите решение в тетради и сверьте его с критериями.</p>'}<details data-verified-answer><summary>Ответ</summary><p>${t.answer} ${t.unit}</p><details><summary>Подробное решение и проверка</summary><ol>${t.steps.map(s=>`<li>${s}</li>`).join('')}</ol><div class="solution-criteria">${t.criteria||'Краткий ответ: 1 балл за верное число, 0 за ошибку или пропуск.'}</div></details></details></article>`;}
 function choices(list){return list.map(t=>`<option value="${t.id}">${t.type} · ${t.id}</option>`).join('');}
-function panel(){return `<section class="verified-physics"><h2>Задания ОГЭ по физике</h2><div class="verified-pickers"><label>Номер ОГЭ<select data-verified-number><option value="all">Все номера</option>${examNumbers.map(n=>`<option value="${n}">№ ${n}</option>`).join('')}</select></label><label>Тема и код задания<select data-verified-picker>${choices(tasks)}</select></label></div><div data-verified-current>${card(tasks[0])}</div><div class="verified-controls"><button class="secondary" data-verified-move="-1" disabled>← Назад</button><span data-verified-count aria-live="polite">1 из ${tasks.length}</span><button class="secondary" data-verified-move="1">Далее →</button></div></section>`;}
+function typeOptions(available) {
+  const counts = new Map();
+  for (const task of available) counts.set(task.type, (counts.get(task.type) || 0) + 1);
+  const options = [...counts].sort(([a], [b]) => a.localeCompare(b, 'ru'));
+  return '<option value="all">Все типы</option>' + options.map(([type, count]) =>
+    `<option value="${type}">${type} · ${count}</option>`).join('');
+}
+function panel(){return `<section class="verified-physics"><h2>Задания ОГЭ по физике</h2><div class="verified-pickers"><label>Номер ОГЭ<select data-verified-number><option value="all">Все номера</option>${examNumbers.map(n=>`<option value="${n}">№ ${n}</option>`).join('')}</select></label><label>Тип задачи<select data-verified-type>${typeOptions(tasks)}</select></label><label>Задание<select data-verified-picker>${choices(tasks)}</select></label></div><div data-verified-current>${card(tasks[0])}</div><div class="verified-controls"><button class="secondary" data-verified-move="-1" disabled>← Назад</button><span data-verified-count aria-live="polite">1 из ${tasks.length}</span><button class="secondary" data-verified-move="1">Далее →</button></div></section>`;}
 function showCurrent(section){const picker=section.querySelector('[data-verified-picker]'),i=picker.selectedIndex,t=tasks.find(x=>String(x.id)===picker.value);section.querySelector('[data-verified-current]').innerHTML=card(t);section.querySelector('[data-verified-count]').textContent=`${i+1} из ${picker.options.length}`;section.querySelector('[data-verified-move="-1"]').disabled=i===0;section.querySelector('[data-verified-move="1"]').disabled=i===picker.options.length-1;}
 if(typeof document!=='undefined'){
  document.addEventListener('toggle',e=>{if(!e.target.matches?.('details[data-verified-answer]')||!e.target.open)return;const id=e.target.closest('[data-verified-task]').dataset.verifiedTask;if(!state.verifiedSeen.includes(id)){state.verifiedSeen.push(id);save();}},true);
 
- document.addEventListener('change',e=>{const section=e.target.closest('.verified-physics');if(!section)return;if(e.target.matches('[data-verified-number]'))section.querySelector('[data-verified-picker]').innerHTML=choices(tasks.filter(t=>e.target.value==='all'||t.n===Number(e.target.value)));else if(!e.target.matches('[data-verified-picker]'))return;showCurrent(section);});
+ document.addEventListener('change', event => {
+   const field = event.target;
+   const section = field.closest('.verified-physics');
+   if (!section || !field.matches('[data-verified-number], [data-verified-type], [data-verified-picker]')) return;
+   if (!field.matches('[data-verified-picker]')) {
+     const number = section.querySelector('[data-verified-number]').value;
+     const available = tasks.filter(task => number === 'all' || task.n === Number(number));
+     const typeField = section.querySelector('[data-verified-type]');
+     if (field.matches('[data-verified-number]')) typeField.innerHTML = typeOptions(available);
+     const list = available.filter(task => typeField.value === 'all' || task.type === typeField.value);
+     section.querySelector('[data-verified-picker]').innerHTML = choices(list);
+   }
+   showCurrent(section);
+ });
  document.addEventListener('click',e=>{const button=e.target.closest('[data-verified-move]');if(!button)return;const section=button.closest('.verified-physics'),picker=section.querySelector('[data-verified-picker]');picker.selectedIndex+=Number(button.dataset.verifiedMove);showCurrent(section);});
  document.addEventListener('submit',e=>{if(!e.target.matches('[data-verified-check]'))return;e.preventDefault();const form=e.target,t=tasks.find(x=>String(x.id)===form.closest('[data-verified-task]').dataset.verifiedTask),input=form.querySelector('input'),v=input.value.trim().replace('−','-').replace(',','.'),key=String(t.answer).replace('−','-').replace(',','.');const ok=t.unit?/^[+-]?\d+(?:\.\d+)?$/.test(v)&&Number(v)===Number(key):v===key;const id=String(t.id),independent=!state.verifiedSeen.includes(id)&&!earned(id)&&!form.closest('article').querySelector('[data-verified-answer]').open;let note='Верно.';if(independent){state.attempts++;if(ok){state.correct++;state.verifiedSolved.push(id);const day=today();state.activity[day]=(state.activity[day]||0)+1;note='Верно! Задача засчитана в цель на сегодня.';}save();}form.querySelector('[role="status"]').textContent=ok?note:`Пока не совпало. ${t.unit?'Проверьте единицы измерения.':'Проверьте порядок цифр.'}`;});
 }
