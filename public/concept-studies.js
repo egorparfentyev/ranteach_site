@@ -115,6 +115,35 @@
     }
   }
   customElements.define('rt-ray-study',RayStudy);
+  class RootStudy extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const root = this.attachShadow({mode:'open'});
+      root.innerHTML = styles + `<details><summary>Почему корень из квадрата равен модулю</summary>
+        <p>У квадрата площадь равна a². Если a отрицательно, эта площадь всё равно положительна. Длина стороны равна |a|. Арифметический квадратный корень показывает неотрицательную длину стороны.</p>
+        <label>Значение a <input type="range" min="-6" max="6" value="-3" step="1"></label>
+        <svg viewBox="0 0 390 200" role="img" aria-label="Площадь квадрата и расстояние до нуля"></svg>
+        <output></output><p>Проверь a = −3 и a = 3. Одинаковым квадратам соответствуют противоположные значения a.</p></details>`;
+      const draw = () => {
+        const a = Number(root.querySelector('input').value), side = Math.abs(a), px = side*20;
+        const x = 245+a*18;
+        root.querySelector('svg').innerHTML =
+          `<rect x="20" y="${150-px}" width="${px}" height="${px}" fill="#d6eade" stroke="#287858" stroke-width="2"/>
+          <text x="20" y="178" font-size="16">Площадь ${a*a}</text>
+          <path d="M130 80H365" stroke="#758a7e" stroke-width="2"/>
+          <path d="M245 80H${x}" stroke="#29815f" stroke-width="6"/>
+          <circle cx="${x}" cy="80" r="5" fill="#29815f"/>
+          <path d="M245 70v20" stroke="#758a7e"/>
+          <text x="245" y="112" text-anchor="middle">0</text>
+          <text x="${x}" y="53" text-anchor="middle">a = ${a}</text>`;
+        root.querySelector('output').innerHTML =
+          `a² = (${a})² = ${a*a}<br>√${a*a} = ${side}<br>√a² = |a| = ${side}`;
+      };
+      root.addEventListener('input',draw);
+      draw();
+    }
+  }
+  customElements.define('rt-root-study',RootStudy);
   customElements.define('rt-sequence-study',SequenceStudy);
   customElements.define('rt-collision-study',CollisionStudy);
 })();
