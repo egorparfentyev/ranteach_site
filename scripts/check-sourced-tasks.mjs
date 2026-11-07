@@ -37,6 +37,11 @@ console.log('Passed: sourced task IDs, numerical answers, algebra roots and inte
  assert.match(submit('F23E41','0.4'),/засчитана/);assert.equal(store.activity['test-day'],1);submit('F23E41','0,4');assert.equal(store.activity['test-day'],1);
  handlers.toggle({target:{matches:()=>true,open:true,closest:()=>({dataset:{verifiedTask:'02ED46'}})}});submit('02ED46','175');assert.equal(store.activity['test-day'],1);assert.ok(!store.verifiedSolved.includes('02ED46'));
  assert.match(submit('DF3949','0'),/не совпало/);assert.match(submit('DF3949','60'),/засчитана/);assert.equal(store.activity['test-day'],2);
+ assert.match(submit('372','43'),/засчитана/);
+ assert.match(submit('319','33'),/не совпало/);
+ assert.match(submit('26240','43'),/не совпало/);
+ assert.match(submit('26240','34'),/засчитана/);
+
 }
 // November bank expansion: verify circuit topology and conditional probability answers.
 for(const [id,value] of Object.entries({'132BF1':220/(110/4),'9449F4':1/((1/2)/2),'9729F4':2.5*(4/1),'B61376':3/6,'54881C':1/(3/9),'882BF2':2,'D38070':1.5,'AFDA75':1/(1/2+1/2)+1/(1/6+1/6),'677676':30/(5+10),'46E193':1/(1/6+1/6)+3+5,'515CFE':1e6/(500*200),'67DDD0':400*2*(230-30)/1000,'3DF797':1e6/(500*10)}))assert.equal(Number(physical.get(id).answer),value,id);
