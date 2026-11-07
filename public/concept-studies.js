@@ -250,6 +250,48 @@
     }
   }
   customElements.define('rt-parallelogram-area-study',ParallelogramAreaStudy);
+  class SimilarityStudy extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const root = this.attachShadow({mode:'open'});
+      root.innerHTML = styles + `<details><summary>Подобие · параллельное сечение треугольника</summary>
+        <p>Основание AC равно 12, высота из B равна 6. Двигай отрезок MN параллельно основанию. У малого треугольника сохраняются углы большого, поэтому все его длины меняются в одном отношении.</p>
+        <label>Доля пути от вершины к основанию <input type="range" min=".2" max=".8" step=".05" value=".5"> <b></b></label>
+        <svg viewBox="0 0 490 280" role="img" aria-label="Отрезок MN параллелен основанию AC. Верхний треугольник BMN подобен всему треугольнику ABC."></svg>
+        <output></output>
+        <p>Поставь сечение посередине. Стороны и высота малого треугольника будут вдвое меньше, а площадь — вчетверо. Проверь это по числам рядом с рисунком.</p>
+      </details>`;
+      const slider = root.querySelector('input');
+      const svg = root.querySelector('svg');
+      const readout = root.querySelector('output');
+      const draw = () => {
+        const k = Number(slider.value);
+        const xM = 134 - 94*k;
+        const xN = 134 + 266*k;
+        const y = 34 + 180*k;
+        const base = 12*k;
+        const height = 6*k;
+        const area = base*height/2;
+        root.querySelector('b').textContent = format(k);
+        svg.innerHTML = `<rect width="490" height="280" rx="15" fill="#f5faf7"/>
+          <path d="M40 214L134 34L400 214Z" fill="#e5f1e9" stroke="#24634e" stroke-width="2.5"/>
+          <path d="M${xM} ${y}L134 34L${xN} ${y}Z" fill="#bce2d1" stroke="none"/>
+          <path d="M134 34L40 214M134 34L400 214" fill="none" stroke="#24634e" stroke-width="2.5"/>
+          <path d="M134 34V214" fill="none" stroke="#527567" stroke-dasharray="5 5"/>
+          <path d="M${xM} ${y}H${xN}" fill="none" stroke="#a16a23" stroke-width="3.5"/>
+          <g font-family="system-ui,sans-serif" font-size="17" fill="#274e42" text-anchor="middle">
+            <text x="134" y="22">B</text><text x="25" y="234">A</text><text x="415" y="234">C</text>
+            <text x="${xM-16}" y="${y+5}">M</text><text x="${xN+17}" y="${y+5}">N</text>
+            <text x="222" y="256">Основание AC = 12</text>
+          </g>`;
+        readout.innerHTML = `Коэффициент подобия <b>k = ${format(k)}</b><br>MN = 12 · ${format(k)} = ${format(base)}<br>Малая высота = 6 · ${format(k)} = ${format(height)}<br>Малая площадь = ${format(base)} · ${format(height)} / 2 = <b>${format(area)}</b> из 36`;
+      };
+      slider.addEventListener('input', draw);
+      draw();
+    }
+  }
+  customElements.define('rt-similarity-study',SimilarityStudy);
+
   class HorizontalLevelStudy extends HTMLElement {
     connectedCallback() {
       if (this.shadowRoot) return;
