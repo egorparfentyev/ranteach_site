@@ -87,6 +87,21 @@ const resultMarkup = mathContext.mathExam();
 assert.match(resultMarkup, /Твой ответ: <b>888<\/b>/);
 assert.match(resultMarkup, /<h3>Ответ: 17<\/h3>/);
 assert.ok(resultMarkup.includes(question.solution));
+const writtenQuestion = data.tasks.find(t => t.source==='demo' && t.n===20);
+mathContext.byId.set(writtenQuestion.id,writtenQuestion);
+mathSession.ids.push(writtenQuestion.id);
+mathSession.done = false;
+mathSession.index = 1;
+mathContext.examReview = false;
+const writtenMarkup = mathContext.mathExam();
+assert.match(writtenMarkup, /Выполните решение в тетради/);
+assert.doesNotMatch(writtenMarkup, /id="exam-answer"|<textarea|<h3>Ответ:/);
+mathContext.examReview = true;
+const reviewMarkup = mathContext.mathExam();
+assert.match(reviewMarkup, /Краткие ответы: 1 из 1/);
+assert.match(reviewMarkup, /Решение в тетради/);
+assert.doesNotMatch(reviewMarkup, /Пропуск|Черновик записан/);
+
 
 for (const year of [2026,2027]) {
   const tasks = data.tasks.filter(t => t.source==='demo' && Number(t.year)===year);
