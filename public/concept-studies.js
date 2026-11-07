@@ -220,6 +220,36 @@
     }
   }
   customElements.define('rt-heating-study',HeatingStudy);
+  class ParallelogramAreaStudy extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const root = this.attachShadow({mode:'open'});
+      root.innerHTML = styles + `<details><summary>Почему сумма площадей не зависит от положения точки</summary>
+        <p>Основание параллелограмма равно 10, высота — 6. У двух треугольников основания одинаковой длины. Передвигай точку E и смотри, как одна высота увеличивается на столько же, на сколько уменьшается другая.</p>
+        <label>Высота точки E над нижней стороной <input type="range" min="0.5" max="5.5" step="0.5" value="2"></label>
+        <svg viewBox="0 0 490 260" role="img" aria-label="Два треугольника внутри параллелограмма"></svg>
+        <output></output><p>У каждого треугольника площадь равна половине произведения основания на высоту. Складываем высоты, получаем полную высоту параллелограмма, поэтому сумма площадей всегда равна половине его площади.</p></details>`;
+      const draw = () => {
+        const lower=Number(root.querySelector('input').value), upper=6-lower;
+        const x=240+10*lower, y=212-26*lower;
+        root.querySelector('svg').innerHTML =
+          `<polygon points="65,212 125,56 385,56 325,212" fill="#f5faf7" stroke="#28634f" stroke-width="2"/>
+          <polygon points="125,56 385,56 ${x},${y}" fill="#c4e5d7" stroke="#438f74" stroke-width="2"/>
+          <polygon points="65,212 325,212 ${x},${y}" fill="#efe7ca" stroke="#9e7935" stroke-width="2"/>
+          <path d="M${x} 56V212" stroke="#4d6458" stroke-width="2" stroke-dasharray="5 5"/>
+          <circle cx="${x}" cy="${y}" r="4" fill="#164b38"/>
+          <g font-size="16" fill="#2d5547"><text x="255" y="39" text-anchor="middle">Верхнее основание · 10</text>
+          <text x="195" y="239" text-anchor="middle">Нижнее основание · 10</text><text x="${x+15}" y="${y+5}">E</text></g>`;
+        root.querySelector('output').innerHTML =
+          `Высоты: ${format(upper)} + ${format(lower)} = 6<br>
+          Верхняя площадь: 10 · ${format(upper)} / 2 = ${format(5*upper)}<br>
+          Нижняя площадь: 10 · ${format(lower)} / 2 = ${format(5*lower)}<br>
+          <b>Сумма площадей: ${format(5*upper)} + ${format(5*lower)} = 30</b>`;
+      };
+      root.addEventListener('input',draw);draw();
+    }
+  }
+  customElements.define('rt-parallelogram-area-study',ParallelogramAreaStudy);
   customElements.define('rt-sequence-study',SequenceStudy);
   customElements.define('rt-collision-study',CollisionStudy);
 })();
