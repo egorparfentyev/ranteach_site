@@ -250,6 +250,46 @@
     }
   }
   customElements.define('rt-parallelogram-area-study',ParallelogramAreaStudy);
+  class HorizontalLevelStudy extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const root = this.attachShadow({mode:'open'});
+      root.innerHTML = styles + `<details><summary>Сколько точек пересечения с прямой y = m</summary>
+        <p>При x &lt; 0 функция задана формулой y = x + 2. При x ≥ 0 действует y = (x − 1)². Двигай горизонтальную прямую. Пустая точка (0; 2) не считается пересечением.</p>
+        <label>Уровень m <input type="range" min="-1" max="4" step="0.25" value="1.5"></label>
+        <svg viewBox="0 0 480 295" role="img" aria-label="Кусочный график и горизонтальная прямая"></svg>
+        <output></output>
+        <p>Проверь отдельно уровни 0, 1 и 2. Число пересечений может измениться в вершине или на границе между формулами.</p></details>`;
+      const x=v=>244+45*v, y=v=>195-36*v;
+      const vertical=Array.from({length:9},(_,i)=>i-4).map(v=>`<path d="M${x(v)} 15V267" stroke="#deebe4"/>
+        <text x="${x(v)}" y="288" text-anchor="middle">${v}</text>`).join('');
+      const horizontal=Array.from({length:8},(_,i)=>i-2).map(v=>`<path d="M64 ${y(v)}H424" stroke="#deebe4"/>
+        <text x="49" y="${y(v)+5}" text-anchor="end">${v}</text>`).join('');
+      const parabola=Array.from({length:81},(_,i)=>{
+        const v=(1+Math.sqrt(5))*i/80;
+        return `${x(v)},${y((v-1)**2)}`;
+      }).join(' ');
+      const draw = () => {
+        const m=Number(root.querySelector('input').value);
+        const intersections=[];
+        if(m<2)intersections.push(m-2);
+        if(m===0)intersections.push(1);
+        if(m>0)intersections.push(...[1-Math.sqrt(m),1+Math.sqrt(m)].filter(v=>v>=0));
+        const points=intersections.map(v=>`<circle cx="${x(v)}" cy="${y(m)}" r="5" fill="#63348d" stroke="white" stroke-width="2"/>`).join('');
+        root.querySelector('svg').innerHTML=`<g font-size="14" fill="#456156">${vertical}${horizontal}</g>
+          <path d="M64 195H424M244 15V267" stroke="#7d978a" stroke-width="2"/>
+          <path d="M64 267L244 123" fill="none" stroke="#b47b2e" stroke-width="3"/>
+          <polyline points="${parabola}" fill="none" stroke="#24785b" stroke-width="3"/>
+          <path d="M64 ${y(m)}H424" stroke="#8754ad" stroke-width="2" stroke-dasharray="6 5"/>
+          <circle cx="244" cy="123" r="5" fill="white" stroke="#b47b2e" stroke-width="2"/>
+          <circle cx="244" cy="159" r="4" fill="#24785b"/>${points}`;
+        root.querySelector('output').innerHTML=`<b>m = ${format(m)} · пересечений: ${intersections.length}</b><br>
+          ${intersections.length?'Абсциссы точек: '+intersections.map(format).join(' · '):'На этом уровне общих точек нет.'}`;
+      };
+      root.addEventListener('input',draw);draw();
+    }
+  }
+  customElements.define('rt-horizontal-level-study',HorizontalLevelStudy);
   customElements.define('rt-sequence-study',SequenceStudy);
   customElements.define('rt-collision-study',CollisionStudy);
 })();
