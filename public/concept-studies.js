@@ -327,6 +327,101 @@
     }
   }
   customElements.define('rt-circuit-power-study',CircuitPowerStudy);
+  class WaveStudy extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const root = this.attachShadow({mode:'open'});
+      root.innerHTML = styles + `<details><summary>Волна · колебания точки и движение гребня</summary>
+        <p>Фиолетовая линия показывает форму волны в один момент времени. Метка «Поплавок» остаётся на одном месте по горизонтали и движется вверх и вниз. Проследи, как при этом гребни уходят вправо.</p>
+        <label>Скорость волны <input data-speed type="range" min="1" max="4" step=".2" value="3.2"> <b data-speed-label></b></label>
+        <label>Частота <input data-frequency type="range" min="1" max="3" step=".25" value="2"> <b data-frequency-label></b></label>
+        <svg viewBox="0 0 580 235" role="img" aria-label="Профиль бегущей волны, поплавок и отметки двух соседних гребней">
+          <rect width="580" height="235" rx="14" fill="#f8f4fc"/>
+          <path d="M38 103H540" fill="none" stroke="#9788a6" stroke-width="1.5"/>
+          <path d="M38 148V157M162 148V157M286 148V157M410 148V157M534 148V157" fill="none" stroke="#9788a6" stroke-width="1.5"/>
+          <g fill="#4a3761" font-size="16" text-anchor="middle" font-family="system-ui,sans-serif">
+            <text x="38" y="177">0</text><text x="162" y="177">2</text><text x="286" y="177">4</text><text x="410" y="177">6</text><text x="534" y="177">8 м</text>
+            <text x="224" y="30">Поплавок</text>
+            <text x="485" y="30">Ход волны →</text>
+          </g>
+          <path d="M224 39V142" fill="none" stroke="#a76d25" stroke-dasharray="4 5"/>
+          <polyline data-wave fill="none" stroke="#7138aa" stroke-width="3.5" stroke-linejoin="round"/>
+          <circle data-float cx="224" r="7" fill="#b87225" stroke="white" stroke-width="2"/>
+          <g data-crests fill="#7138aa" stroke="white" stroke-width="2"><circle cy="61" r="4.5"/><circle cy="61" r="4.5"/></g>
+          <path data-span fill="none" stroke="#7138aa" stroke-width="2"/>
+          <text data-wavelength y="225" text-anchor="middle" fill="#4a3761" font-size="17">λ</text>
+        </svg>
+        <label>Время <input data-time type="range" min="0" max="8" step=".01" value="0"> <b data-time-label></b></label>
+        <button type="button">Запустить</button>
+        <output></output>
+        <p>Расстояние от одного гребня до следующего — длина волны λ. За один период гребень проходит это расстояние. Если оставить скорость прежней и увеличить частоту, длина волны уменьшится.</p>
+      </details>`;
+      const speed = root.querySelector('[data-speed]');
+      const frequency = root.querySelector('[data-frequency]');
+      const time = root.querySelector('[data-time]');
+      const button = root.querySelector('button');
+      const [speedLabel, frequencyLabel, timeLabel] = [...root.querySelectorAll('label b')];
+      const wave = root.querySelector('[data-wave]');
+      const float = root.querySelector('[data-float]');
+      const crests = root.querySelectorAll('[data-crests] circle');
+      const span = root.querySelector('[data-span]');
+      const wavelength = root.querySelector('[data-wavelength]');
+      const output = root.querySelector('output');
+      const px = x => 38 + 62*x;
+      const draw = () => {
+        const v = Number(speed.value);
+        const f = Number(frequency.value);
+        const t = Number(time.value);
+        const length = v/f;
+        const y = x => 103 - 42*Math.cos(2*Math.PI*(x/length-f*t));
+        wave.setAttribute('points',Array.from({length:201},(_,i)=> {
+          const x = i/25;
+          return `${px(x)},${y(x).toFixed(1)}`;
+        }).join(' '));
+        float.setAttribute('cy',y(3));
+        const x1 = px((v*t)%length);
+        const x2 = x1 + 62*length;
+        crests[0].setAttribute('cx',x1);
+        crests[1].setAttribute('cx',x2);
+        span.setAttribute('d',`M${x1} 190v13m0-6H${x2}m0-7v13`);
+        wavelength.setAttribute('x',(x1+x2)/2);
+        speedLabel.textContent = format(v)+' м/с';
+        frequencyLabel.textContent = format(f)+' Гц';
+        timeLabel.textContent = format(t)+' с';
+        output.innerHTML = `Период T = 1 / ν = <b>${format(1/f)} с</b><br>Длина волны λ = v / ν = ${format(v)} / ${format(f)} = <b>${format(length)} м</b>`;
+      };
+      this.stop = () => {
+        cancelAnimationFrame(this.frame);
+        this.frame = 0;
+        button.textContent = 'Запустить';
+      };
+      root.addEventListener('input',() => { this.stop(); draw(); });
+      root.querySelector('details').addEventListener('toggle',event => {
+        if (!event.target.open) this.stop();
+      });
+      button.addEventListener('click',() => {
+        if (this.frame) {
+          this.stop();
+          return;
+        }
+        if (Number(time.value) >= 8) time.value = 0;
+        const start = performance.now() - 1000*Number(time.value);
+        const tick = now => {
+          time.value = Math.min(8,(now-start)/1000);
+          draw();
+          if (Number(time.value) >= 8) this.stop();
+          else this.frame = requestAnimationFrame(tick);
+        };
+        button.textContent = 'Пауза';
+        this.frame = requestAnimationFrame(tick);
+      });
+      draw();
+    }
+    disconnectedCallback() {
+      this.stop?.();
+    }
+  }
+  customElements.define('rt-wave-study',WaveStudy);
   customElements.define('rt-sequence-study',SequenceStudy);
   customElements.define('rt-collision-study',CollisionStudy);
 })();
