@@ -290,6 +290,43 @@
     }
   }
   customElements.define('rt-horizontal-level-study',HorizontalLevelStudy);
+  class CircuitPowerStudy extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const root=this.attachShadow({mode:'open'});
+      root.innerHTML=styles+`<details><summary>Как соединение меняет мощность</summary>
+        <p>Источник поддерживает 12 В. Сопротивление первого резистора 6 Ом. Измени сопротивление второго и сравни показания при последовательном и параллельном соединениях.</p>
+        <label>Соединение <select><option value="series">Последовательное</option><option value="parallel">Параллельное</option></select></label>
+        <label>Сопротивление R<sub>2</sub> <input type="range" min="6" max="30" value="18"> <b></b></label>
+        <svg viewBox="0 0 480 246" role="img" aria-label="Схема соединения двух резисторов"></svg>
+        <output></output>
+        <p>При последовательном соединении ток общий, поэтому P = I²R больше у большего сопротивления. При параллельном соединении напряжение общее, поэтому P = U²/R больше у меньшего сопротивления.</p></details>`;
+      const resistor=(x,y,id)=>`<rect x="${x}" y="${y-15}" width="82" height="30" rx="4" fill="#eadff4"/>
+        <text x="${x+41}" y="${y+6}" fill="#50345f" stroke="none" text-anchor="middle" font-size="17">${id}</text>`;
+      const draw=()=>{
+        const r1=6,r2=Number(root.querySelector('input').value),u=12;
+        const series=root.querySelector('select').value==='series';
+        const total=series?r1+r2:1/(1/r1+1/r2);
+        const current=u/total;
+        const i1=series?current:u/r1, i2=series?current:u/r2;
+        const p1=i1*i1*r1, p2=i2*i2*r2;
+        const wire=series
+          ?'<path d="M64 169H128M210 169H272M354 169H416V53H251M229 53H64V169"/>'+resistor(128,169,'R₁')+resistor(272,169,'R₂')
+          :'<path d="M229 53H64V197H200M282 197H416V53H251M64 123H200M282 123H416"/>'+resistor(200,123,'R₁')+resistor(200,197,'R₂')+
+            '<circle cx="64" cy="123" r="4" fill="#8052a9"/><circle cx="416" cy="123" r="4" fill="#8052a9"/>';
+        root.querySelector('svg').innerHTML=`<rect width="480" height="246" rx="12" fill="#faf6ff"/>
+          <g stroke="#8052a9" stroke-width="3" fill="none">${wire}<path d="M229 35V71M251 43V63"/></g>
+          <text x="240" y="24" fill="#50345f" text-anchor="middle" font-size="16">12 В</text>`;
+        root.querySelector('b').textContent=format(r2)+' Ом';
+        root.querySelector('output').innerHTML=`<b>R<sub>общ</sub> = ${format(total)} Ом · I<sub>общ</sub> = ${format(current)} А</b><br>
+          R<sub>1</sub>: U = ${format(i1*r1)} В, I = ${format(i1)} А, P = ${format(p1)} Вт<br>
+          R<sub>2</sub>: U = ${format(i2*r2)} В, I = ${format(i2)} А, P = ${format(p2)} Вт<br>
+          Общая мощность = ${format(p1+p2)} Вт`;
+      };
+      root.addEventListener('input',draw);draw();
+    }
+  }
+  customElements.define('rt-circuit-power-study',CircuitPowerStudy);
   customElements.define('rt-sequence-study',SequenceStudy);
   customElements.define('rt-collision-study',CollisionStudy);
 })();
