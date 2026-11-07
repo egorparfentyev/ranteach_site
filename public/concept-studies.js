@@ -175,6 +175,51 @@
     }
   }
   customElements.define('rt-gravity-work-study',GravityWorkStudy);
+  class HeatingStudy extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const root = this.attachShadow({mode:'open'});
+      root.innerHTML = styles + `<details><summary>Нагревание и плавление льда</summary>
+        <p>Лёд начинают нагревать при −20 °C. На первом участке растёт температура льда, на втором он плавится при 0 °C, на третьем нагревается образовавшаяся вода.</p>
+        <label>Масса льда <input type="range" min="0.25" max="2" step="0.25" value="1"> <b></b></label>
+        <label>Подведённая теплота <input type="range" min="0" max="540" step="0.5" value="200"> <b></b></label>
+        <svg viewBox="0 0 480 280" role="img" aria-label="Температура от подведённой теплоты"></svg>
+        <output></output>
+        <p>Для наклонных участков Q = cmΔt. На горизонтальном участке температура постоянна и Q = λm. Сравни ширину участка плавления при массе 0,5 кг и 2 кг.</p></details>`;
+      const [mass,heat] = root.querySelectorAll('input');
+      const draw = () => {
+        const m=Number(mass.value);
+        const warmed=42*m, melted=372*m, limit=540*m;
+        heat.max=limit;
+        const q=Number(heat.value);
+        const x=value=>62+360*value/1080;
+        const y=value=>202-2.7*(value+20);
+        const t=q<warmed?-20+q/(2.1*m):q<=melted?0:(q-melted)/(4.2*m);
+        const caption=q<warmed?'Лёд нагревается':q<melted?'Лёд плавится':'Вода нагревается';
+        const stage=q<warmed?'Q = c<sub>л</sub>mΔt':q<melted?'Q<sub>пл</sub> = Q − c<sub>л</sub>m · 20':'Q<sub>в</sub> = Q − c<sub>л</sub>m · 20 − λm';
+        const grid=[-20,0,20,40].map(value=>`<path d="M62 ${y(value)}H422" stroke="#e7ddeb"/>
+          <text x="52" y="${y(value)+5}" text-anchor="end">${value}</text>`).join('');
+        const ticks=[0,270,540,810,1080].map(value=>`<path d="M${x(value)} 40V202" stroke="#e7ddeb"/>
+          <text x="${x(value)}" y="226" text-anchor="middle">${value}</text>`).join('');
+        root.querySelector('svg').innerHTML =
+          `<g font-size="14" fill="#543a69">${grid}${ticks}<text x="18" y="28">t, °C</text>
+          <text x="420" y="255" text-anchor="end">Q, кДж</text></g>
+          <path d="M62 40V202H422" fill="none" stroke="#8d779d" stroke-width="2"/>
+          <path d="M62 202L${x(warmed)} ${y(0)}" fill="none" stroke="#637db4" stroke-width="4"/>
+          <path d="M${x(warmed)} ${y(0)}H${x(melted)}" fill="none" stroke="#9a5caf" stroke-width="4"/>
+          <path d="M${x(melted)} ${y(0)}L${x(limit)} ${y(40)}" fill="none" stroke="#b3733a" stroke-width="4"/>
+          <circle cx="${x(q)}" cy="${y(t)}" r="6" fill="#4b235f" stroke="white" stroke-width="2"/>`;
+        const labels=root.querySelectorAll('label b');
+        labels[0].textContent=format(m)+' кг';
+        labels[1].textContent=format(q)+' кДж';
+        root.querySelector('output').innerHTML=`<b>${caption} · ${format(t)} °C</b><br>
+          ${stage}<br>Нагрев льда до 0 °C: 2,1 · ${format(m)} · 20 = ${format(warmed)} кДж<br>
+          Полное плавление: 330 · ${format(m)} = ${format(melted-warmed)} кДж`;
+      };
+      root.addEventListener('input',draw);draw();
+    }
+  }
+  customElements.define('rt-heating-study',HeatingStudy);
   customElements.define('rt-sequence-study',SequenceStudy);
   customElements.define('rt-collision-study',CollisionStudy);
 })();
