@@ -10,3 +10,9 @@
 .math-solution figure {margin:1.5rem 0;max-width:100%;}
 .math-solution figure img {display:block;width:100%;max-width:680px;height:auto;margin-inline:auto;}
 .math-solution figcaption {font-size:.9rem;color:var(--muted);margin-top:.6rem;}
+
+.math-graph-options {display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:.8rem;margin:1rem 0;}
+.math-graph-options figure {margin:0;text-align:center;}
+.math-graph-options svg {display:block;width:100%;max-width:15rem;height:auto;margin-inline:auto;}
+.math-graph-options figcaption {margin-top:.25rem;font-weight:700;}
+.math-graph-formulas {display:flex;flex-wrap:wrap;gap:.6rem 1.5rem;list-style:none;padding:0;}
