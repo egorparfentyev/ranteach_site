@@ -373,10 +373,16 @@
     connectedCallback() {
       if (this.shadowRoot) return;
       const root = this.attachShadow({mode:'open'});
-      root.innerHTML = styles + `<details><summary>Волна · колебания точки и движение гребня</summary>
-        <p>Фиолетовая линия показывает форму волны в один момент времени. Метка «Поплавок» остаётся на одном месте по горизонтали и движется вверх и вниз. Проследи, как при этом гребни уходят вправо.</p>
+      root.innerHTML = styles + `<style>
+        .wave-plots{display:flex;flex-wrap:wrap;gap:1rem}
+        .wave-plots figure{flex:1 1 350px;min-width:0;margin:0}
+        .wave-plots figcaption{font-weight:650;margin:0 0 .4rem}
+      </style><details><summary>Волна · колебания точки и движение гребня</summary>
+        <p>На первом графике видно форму волны в один момент, на втором — как один поплавок поднимается и опускается со временем. Две оранжевые точки показывают одно и то же положение поплавка.</p>
         <label>Скорость волны <input data-speed type="range" min="1" max="4" step=".2" value="3.2"> <b data-speed-label></b></label>
         <label>Частота <input data-frequency type="range" min="1" max="3" step=".25" value="2"> <b data-frequency-label></b></label>
+        <div class="wave-plots">
+        <figure><figcaption>Форма волны · координата x</figcaption>
         <svg viewBox="0 0 580 235" role="img" aria-label="Профиль бегущей волны, поплавок и отметки двух соседних гребней">
           <rect width="580" height="235" rx="14" fill="#f8f4fc"/>
           <path d="M38 103H540" fill="none" stroke="#9788a6" stroke-width="1.5"/>
@@ -392,7 +398,22 @@
           <g data-crests fill="#7138aa" stroke="white" stroke-width="2"><circle cy="61" r="4.5"/><circle cy="61" r="4.5"/></g>
           <path data-span fill="none" stroke="#7138aa" stroke-width="2"/>
           <text data-wavelength y="225" text-anchor="middle" fill="#4a3761" font-size="17">λ</text>
-        </svg>
+        </svg></figure>
+        <figure><figcaption>Движение поплавка · время t</figcaption>
+        <svg viewBox="0 0 580 235" role="img" aria-label="График высоты поплавка. Оранжевая точка соответствует текущему времени.">
+          <rect width="580" height="235" rx="14" fill="#f8f4fc"/>
+          <path d="M38 45V148H534M38 103H534M162 45V148M286 45V148M410 45V148M534 45V148" fill="none" stroke="#dfd3ec" stroke-width="1.5"/>
+          <path d="M38 103H534" fill="none" stroke="#9788a6" stroke-width="1.5"/>
+          <polyline data-history fill="none" stroke="#7138aa" stroke-width="3.5" stroke-linejoin="round"/>
+          <path data-now fill="none" stroke="#a76d25" stroke-dasharray="4 5"/>
+          <circle data-history-float r="7" fill="#b87225" stroke="white" stroke-width="2"/>
+          <g fill="#4a3761" font-size="16" text-anchor="middle" font-family="system-ui,sans-serif">
+            <text x="113" y="30">Смещение поплавка</text>
+            <text data-time-tick x="38" y="177"/><text data-time-tick x="162" y="177"/><text data-time-tick x="286" y="177"/><text data-time-tick x="410" y="177"/><text data-time-tick x="534" y="177"/>
+            <text x="286" y="215">Время, с</text>
+          </g>
+        </svg></figure>
+        </div>
         <label>Время <input data-time type="range" min="0" max="8" step=".01" value="0"> <b data-time-label></b></label>
         <button type="button">Запустить</button>
         <output></output>
@@ -405,6 +426,10 @@
       const [speedLabel, frequencyLabel, timeLabel] = [...root.querySelectorAll('label b')];
       const wave = root.querySelector('[data-wave]');
       const float = root.querySelector('[data-float]');
+      const history = root.querySelector('[data-history]');
+      const historyFloat = root.querySelector('[data-history-float]');
+      const now = root.querySelector('[data-now]');
+      const timeTicks = root.querySelectorAll('[data-time-tick]');
       const crests = root.querySelectorAll('[data-crests] circle');
       const span = root.querySelector('[data-span]');
       const wavelength = root.querySelector('[data-wavelength]');
@@ -415,12 +440,23 @@
         const f = Number(frequency.value);
         const t = Number(time.value);
         const length = v/f;
-        const y = x => 103 - 42*Math.cos(2*Math.PI*(x/length-f*t));
+        const y = (x, moment) => 103 - 42*Math.cos(2*Math.PI*(x/length-f*moment));
         wave.setAttribute('points',Array.from({length:201},(_,i)=> {
           const x = i/25;
-          return `${px(x)},${y(x).toFixed(1)}`;
+          return `${px(x)},${y(x,t).toFixed(1)}`;
         }).join(' '));
-        float.setAttribute('cy',y(3));
+        const floatHeight = y(3,t);
+        float.setAttribute('cy',floatHeight);
+        const windowStart = Math.max(0,Math.min(6,t-1));
+        history.setAttribute('points',Array.from({length:161},(_,i) => {
+          const elapsed = i/80;
+          return `${(38+248*elapsed).toFixed(1)},${y(3,windowStart+elapsed).toFixed(1)}`;
+        }).join(' '));
+        const cursor = 38+248*(t-windowStart);
+        now.setAttribute('d',`M${cursor} 45V148`);
+        historyFloat.setAttribute('cx',cursor);
+        historyFloat.setAttribute('cy',floatHeight);
+        timeTicks.forEach((label,i) => { label.textContent = format(windowStart+i/2); });
         const x1 = px((v*t)%length);
         const x2 = x1 + 62*length;
         crests[0].setAttribute('cx',x1);
