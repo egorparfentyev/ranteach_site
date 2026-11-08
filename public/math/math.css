@@ -24,3 +24,6 @@
 .math-context-table table {width:100%;border-collapse:collapse;font-size:1rem;}
 .math-context-table caption {text-align:left;font-weight:700;margin-bottom:.4rem;}
 .math-context-table th,.math-context-table td {border-bottom:1px solid var(--line);padding:.55rem .7rem;text-align:left;}
+
+.math-probability-figure { margin: 1rem 0; max-width: 580px; }
+.math-probability-figure svg { display: block; width: 100%; height: auto; }

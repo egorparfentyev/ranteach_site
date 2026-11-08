@@ -34,6 +34,69 @@
       root.addEventListener('input',draw);draw();
     }
   }
+  class EulerStudy extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const root = this.attachShadow({mode:'open'});
+      const names = ['Только A','A и B','Только B','Вне кругов'];
+      const events = {
+        intersection: {regions:[1], label:'A ∩ B'},
+        union: {regions:[0,1,2], label:'A ∪ B'},
+        outsideB: {regions:[0,3], label:'не B'},
+        unionOutsideB: {regions:[0,1,3], label:'A или не B'}
+      };
+      root.innerHTML = styles + `<style>
+        .euler-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:.3rem 1rem}
+        .euler-controls input{display:block;width:100%}
+      </style><details><summary>Диаграмма Эйлера · какие области считать?</summary>
+        <p>Представь класс: A — ребята, которые ходят в бассейн, B — те, кто ходит на танцы. В пересечении — те, кто ходит в оба места. Меняй числа и смотри, кого включает выбранное событие.</p>
+        <label>Событие <select>
+          <option value="intersection">A и B · пересечение</option>
+          <option value="union" selected>A или B · объединение</option>
+          <option value="outsideB">Не B · дополнение</option>
+          <option value="unionOutsideB">A или не B</option>
+        </select></label>
+        <svg viewBox="0 0 580 258" role="img" aria-label="Диаграмма Эйлера. Зелёные области входят в событие.">
+          <rect x="1" y="1" width="578" height="256" rx="14" data-region="3"/>
+          <path d="M290 83.2A130 77 0 1 0 290 201.8A130 77 0 0 1 290 83.2Z" data-region="0"/>
+          <path d="M290 83.2A130 77 0 0 1 290 201.8A130 77 0 0 1 290 83.2Z" data-region="1"/>
+          <path d="M290 83.2A130 77 0 0 1 290 201.8A130 77 0 1 0 290 83.2Z" data-region="2"/>
+          <g fill="none" stroke="#4d7e70" stroke-width="2">
+            <rect x="1" y="1" width="578" height="256" rx="14"/><ellipse cx="207" cy="142.5" rx="130" ry="77"/><ellipse cx="373" cy="142.5" rx="130" ry="77"/>
+          </g>
+          <g fill="#16473b" text-anchor="middle" font-family="system-ui,sans-serif" font-size="23" font-weight="650">
+            <text x="53" y="149">A</text><text x="527" y="149">B</text>
+            <text x="170" y="150" data-count="0"/><text x="290" y="150" data-count="1"/>
+            <text x="410" y="150" data-count="2"/><text x="506" y="43" data-count="3"/>
+          </g>
+        </svg>
+        <div class="euler-controls">${names.map((name,i)=>`<label>${name} <b></b><input type="range" min="0" max="12" value="${[4,2,3,5][i]}"></label>`).join('')}</div>
+        <output></output>
+        <p>Для пересечения берём только общую область. Для объединения складываем три области внутри кругов, считая общую область один раз. «Не B» включает всё снаружи круга B, даже точки за обоими кругами.</p>
+      </details>`;
+      const inputs = [...root.querySelectorAll('input')];
+      const select = root.querySelector('select');
+      const labels = root.querySelectorAll('label b');
+      const counts = root.querySelectorAll('[data-count]');
+      const regions = [...root.querySelectorAll('[data-region]')].sort((a,b)=>Number(a.dataset.region)-Number(b.dataset.region));
+      const output = root.querySelector('output');
+      const draw = () => {
+        const amounts = inputs.map(input => Number(input.value));
+        const event = events[select.value];
+        const total = amounts.reduce((sum,amount) => sum+amount,0);
+        const included = event.regions.reduce((sum,index) => sum+amounts[index],0);
+        amounts.forEach((amount,i) => {
+          labels[i].textContent = amount;
+          counts[i].textContent = amount;
+          regions[i].setAttribute('fill',event.regions.includes(i) ? '#a6ddbd' : '#edf2f0');
+        });
+        output.textContent = total ? `P(${event.label}) = ${included} из ${total} (≈ ${format(included/total*100)} %). Подходят области: ${event.regions.map(i=>names[i]).join(', ')}.` : 'Исходов пока нет. Добавь хотя бы один исход, чтобы посчитать вероятность.';
+      };
+      root.addEventListener('input',draw);
+      draw();
+    }
+  }
+  customElements.define('rt-euler-study',EulerStudy);
   class CollisionStudy extends HTMLElement {
     connectedCallback() {
       if (this.shadowRoot) return;
