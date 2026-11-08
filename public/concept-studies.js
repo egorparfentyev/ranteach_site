@@ -464,6 +464,73 @@
     }
   }
   customElements.define('rt-wave-study',WaveStudy);
+  class LensStudy extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const root = this.attachShadow({mode:'open'});
+      root.innerHTML = styles + `<details><summary>Собирающая линза · действительное и мнимое изображение</summary>
+        <p>Двигай предмет вдоль оптической оси. Один луч проходит через центр линзы без отклонения. Другой идёт параллельно оси, а за линзой проходит через фокус.</p>
+        <label>Расстояние до предмета <input type="range" min=".5" max="4" step=".05" value="2"> <b></b></label>
+        <svg viewBox="0 0 640 300" role="img" aria-label="Ход двух лучей через собирающую линзу"></svg>
+        <output></output>
+        <p>Формула тонкой линзы: 1/F = 1/d + 1/b. Здесь d — расстояние до предмета, b — до действительного изображения. Для мнимого изображения b отрицательно.</p>
+        <p>При расстоянии меньше F лучи за линзой расходятся. Пунктир показывает их продолжения. Мнимое изображение видно через линзу, но его нельзя поймать на экране.</p>
+      </details>`;
+      const slider = root.querySelector('input');
+      const output = root.querySelector('output');
+      const picture = root.querySelector('svg');
+      const draw = () => {
+        const distance = Number(slider.value);
+        const inFocus = distance === 1;
+        const image = inFocus ? 0 : distance / (distance - 1);
+        const height = .45;
+        const imageHeight = inFocus ? 0 : -height * image / distance;
+        const scale = Math.min(68, 242 / Math.max(distance, Math.abs(image)), 83 / Math.max(height, Math.abs(imageHeight)));
+        const x = value => 320 + value * scale;
+        const y = value => 149 - value * scale;
+        const rayStart = x(-distance);
+        const rayHeight = y(height);
+        const right = 596;
+        const rayX = (right - 320) / scale;
+        const real = distance > 1;
+        const segment = (x1,y1,x2,y2,color,width,dashed=false) => `<path d="M${x1} ${y1}L${x2} ${y2}" fill="none" stroke="${color}" stroke-width="${width}"${dashed?' stroke-dasharray="5 5"':''}/>`;
+        const arrow = (at,to,color,dashed=false) => {
+          const direction = to < 149 ? 1 : -1;
+          return segment(at,149,at,to,color,3.8,dashed) + `<path d="M${at-5} ${to+7*direction}L${at} ${to}L${at+5} ${to+7*direction}" fill="none" stroke="${color}" stroke-width="2.5"/>`;
+        };
+        const mark = (n,label) => `<path d="M${x(n)} 143v12" stroke="#816f98" stroke-width="1.5"/><text x="${x(n)}" y="258" text-anchor="middle" fill="#543b70" font-size="16">${label}</text>`;
+        const marks = scale > 23 ? mark(-2,'2F')+mark(-1,'F')+mark(1,'F')+mark(2,'2F') : '';
+        const forward = segment(rayStart,rayHeight,320,rayHeight,'#ab702b',2.5) +
+          segment(320,rayHeight,right,y(height*(1-rayX)),'#ab702b',2.5) +
+          segment(rayStart,rayHeight,right,y(-height*rayX/distance),'#5378a9',2.5);
+        const backward = real || inFocus ? '' : segment(320,rayHeight,x(image),y(imageHeight),'#ab702b',2,true) +
+          segment(320,149,x(image),y(imageHeight),'#5378a9',2,true);
+        const imageArrow = inFocus ? '' : arrow(x(image),y(imageHeight),'#ad5726',!real);
+        picture.innerHTML = `<rect width="640" height="300" rx="16" fill="#f7f2fc"/>
+          <defs><clipPath id="rt-lens-rays"><rect x="39" y="44" width="557" height="191"/></clipPath></defs>
+          <path d="M39 149H603m-8-5 8 5-8 5" fill="none" stroke="#897ba1" stroke-width="1.6"/>
+          <g clip-path="url(#rt-lens-rays)">${forward}${backward}</g>
+          ${marks}${arrow(rayStart,rayHeight,'#4f3d78')}${imageArrow}
+          <path d="M320 77V220m-8-8 8 8 8-8M312 85l8-8 8 8" fill="none" stroke="#7850a4" stroke-width="3"/>
+          <g font-family="system-ui,sans-serif" font-size="16">
+            <text x="53" y="28" fill="#4f3d78">Предмет</text>
+            <text x="320" y="28" text-anchor="middle" fill="#7850a4">Линза</text>
+            <text x="587" y="28" text-anchor="end" fill="#ad5726">Изображение</text>
+          </g>`;
+        root.querySelector('b').textContent = format(distance)+'F';
+        if (inFocus) {
+          output.textContent = 'Предмет находится в фокусе. Лучи за линзой параллельны, поэтому изображения на конечном расстоянии нет.';
+        } else {
+          const status = real ? 'действительное, перевёрнутое' : 'мнимое, прямое';
+          output.innerHTML = `Расстояние от линзы до изображения <b>${format(Math.abs(image))}F</b><br>Увеличение по модулю <b>${format(Math.abs(image / distance))}</b><br>Изображение ${status}.`;
+        }
+      };
+      slider.addEventListener('input',draw);
+      draw();
+    }
+  }
+  customElements.define('rt-lens-study',LensStudy);
+
   customElements.define('rt-sequence-study',SequenceStudy);
   customElements.define('rt-collision-study',CollisionStudy);
 })();
