@@ -16,3 +16,11 @@
 .math-graph-options svg {display:block;width:100%;max-width:15rem;height:auto;margin-inline:auto;}
 .math-graph-options figcaption {margin-top:.25rem;font-weight:700;}
 .math-graph-formulas {display:flex;flex-wrap:wrap;gap:.6rem 1.5rem;list-style:none;padding:0;}
+
+.math-plan {margin:1rem 0 1.5rem;}
+.math-plan svg {display:block;width:100%;max-width:42rem;height:auto;}
+.math-plan figcaption {margin-top:.5rem;color:var(--muted);}
+.math-context-table {overflow-x:auto;}
+.math-context-table table {width:100%;border-collapse:collapse;font-size:1rem;}
+.math-context-table caption {text-align:left;font-weight:700;margin-bottom:.4rem;}
+.math-context-table th,.math-context-table td {border-bottom:1px solid var(--line);padding:.55rem .7rem;text-align:left;}
