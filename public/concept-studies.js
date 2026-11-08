@@ -530,6 +530,91 @@
     }
   }
   customElements.define('rt-lens-study',LensStudy);
+  class PulleyStudy extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const root = this.attachShadow({mode:'open'});
+      root.innerHTML = styles + `<details><summary>Блоки · сила тяги и путь верёвки</summary>
+        <p>Подними один и тот же груз двумя способами. Сравни силу тяги и то, сколько верёвки проходит через руку. Блоки и верёвка лёгкие, трения нет, груз поднимается равномерно.</p>
+        <label>Тип блока <select><option value="fixed">Неподвижный</option><option value="moving">Подвижный</option></select></label>
+        <label>Масса груза <input data-mass type="range" min="1" max="10" step="1" value="4"> <b data-mass-label></b></label>
+        <svg viewBox="0 0 580 300" role="img" aria-label="Модель подъёма груза с помощью блока"></svg>
+        <label>Высота подъёма <input data-rise type="range" min="0" max="1" step=".01" value="0"> <b data-rise-label></b></label>
+        <button type="button">Запустить подъём</button><output></output>
+        <p>Подвижный блок поддерживают две ветви верёвки. Каждая несёт половину нагрузки, зато для подъёма на один метр нужно вытянуть два метра верёвки.</p>
+      </details>`;
+      const mode = root.querySelector('select');
+      const mass = root.querySelector('[data-mass]');
+      const rise = root.querySelector('[data-rise]');
+      const button = root.querySelector('button');
+      const stage = root.querySelector('svg');
+      const output = root.querySelector('output');
+      const draw = () => {
+        const moving = mode.value === 'moving';
+        const branches = moving ? 2 : 1;
+        const m = Number(mass.value);
+        const height = Number(rise.value);
+        const travel = height * 54;
+        const wheelY = moving ? 175 - travel : 84;
+        const hookX = moving ? 279 : 247;
+        const weightY = 226 - travel;
+        const endY = moving ? 151 - 2*travel : 140 + travel;
+        const rope = moving
+          ? `M247 39V${wheelY}a32 32 0 0 0 64 0V${endY}`
+          : `M247 ${weightY}V84a32 32 0 0 1 64 0V${endY}`;
+        const anchor = moving
+          ? `M215 39H282M279 ${wheelY+30}V${weightY}`
+          : 'M240 39H318M279 39V54';
+        const tipY = endY + (moving ? -20 : 24);
+        const wingY = tipY + (moving ? 7 : -7);
+        stage.innerHTML = `<rect width="580" height="300" rx="15" fill="#f7f2fc"/>
+          <path d="M128 266H475" fill="none" stroke="#c8b9d7" stroke-dasharray="4 5"/>
+          <path d="${anchor}" fill="none" stroke="#7950a4" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="279" cy="${wheelY}" r="28.5" fill="#e1d4f1" stroke="#7950a4" stroke-width="3"/>
+          <circle cx="279" cy="${wheelY}" r="4" fill="#7950a4"/>
+          <path d="${rope}" fill="none" stroke="#594373" stroke-width="3" stroke-linecap="round"/>
+          <path d="M311 ${endY}V${tipY}M304 ${wingY}L311 ${tipY}L318 ${wingY}" fill="none" stroke="#ab6e28" stroke-width="3" stroke-linecap="round"/>
+          <rect x="${hookX-30}" y="${weightY}" width="60" height="36" rx="7" fill="#d6bcee" stroke="#7950a4" stroke-width="2"/>
+          <g font-family="system-ui,sans-serif" font-size="17" fill="#4f3964">
+            <text x="${hookX}" y="${weightY+24}" text-anchor="middle">${m} кг</text>
+            <text x="335" y="${(endY+tipY)/2+6}" fill="#8e5318">Тяга ${format(m*10/branches)} Н</text>
+            <text x="84" y="287">Начальный уровень нижней грани груза</text>
+          </g>`;
+        root.querySelector('[data-mass-label]').textContent = m+' кг';
+        root.querySelector('[data-rise-label]').textContent = format(height)+' м';
+        output.innerHTML = `Сила тяги <b>${format(m*10/branches)} Н</b><br>Верёвка прошла <b>${format(branches*height)} м</b><br>Работа тяги = ${format(m*10/branches)} · ${format(branches*height)} = <b>${format(m*10*height)} Дж</b>`;
+      };
+      this.stop = () => {
+        cancelAnimationFrame(this.frame);
+        this.frame = 0;
+        button.textContent = 'Запустить подъём';
+      };
+      root.addEventListener('input',()=>{this.stop();draw();});
+      root.querySelector('details').addEventListener('toggle',event=>{if(!event.target.open)this.stop();});
+      button.addEventListener('click',()=>{
+        if (this.frame) {
+          this.stop();
+          return;
+        }
+        if (Number(rise.value) >= 1) rise.value = 0;
+        const start = performance.now() - 2400 * Number(rise.value);
+        const tick = now => {
+          rise.value = Math.min(1,(now-start)/2400);
+          draw();
+          if (Number(rise.value) >= 1) this.stop();
+          else this.frame = requestAnimationFrame(tick);
+        };
+        button.textContent = 'Пауза';
+        this.frame = requestAnimationFrame(tick);
+      });
+      draw();
+    }
+    disconnectedCallback() {
+      this.stop?.();
+    }
+  }
+  customElements.define('rt-pulley-study',PulleyStudy);
+
 
   customElements.define('rt-sequence-study',SequenceStudy);
   customElements.define('rt-collision-study',CollisionStudy);
